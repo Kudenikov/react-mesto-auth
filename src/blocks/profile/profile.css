@@ -1,0 +1,18 @@
+.profile {
+    width: calc(100% - 400px);
+    margin: 40px auto 0;
+    color: #FFFFFF;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0;
+    position: relative;
+}
+
+@media screen and (max-width: 767px) {
+    .profile {
+        width: calc(100% - 38px);
+        margin: 42px auto 0;
+        flex-direction: column;
+        align-items: center;
+    }
+}

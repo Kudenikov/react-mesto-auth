@@ -1,0 +1,16 @@
+.popup__button_inactive {
+    background-color: #ffffff;
+    border-radius: 2px;
+    margin: 0 auto 37px;
+    color: #000000;
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    opacity: .2;
+    cursor: default;
+    border: 1px solid #000000;
+}
+
+.popup__button_inactive:hover {
+    opacity: .2;
+}

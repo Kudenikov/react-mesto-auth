@@ -1,0 +1,5 @@
+.popup__content_size_small {
+    display: flex;
+    flex-direction: column;
+    min-height: 181px;
+}

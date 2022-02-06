@@ -1,0 +1,13 @@
+.page {
+    margin: 0 auto;
+    background-color: #000000;
+    max-width: 1280px;
+    min-width: 320px;
+    padding: 0;
+}
+
+/*
+a, body, header, main, footer, div, section, img, h1, p, button {
+    border: 1px solid red;
+}
+*/

@@ -1,0 +1,5 @@
+.popup__content_size_medium {
+    display: flex;
+    flex-direction: column;
+    min-height: 272px;
+}

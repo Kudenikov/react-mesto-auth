@@ -1,0 +1,7 @@
+.cards__description {
+    width: 246px;
+    margin: 25px auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
