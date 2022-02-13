@@ -5,9 +5,19 @@
     margin: 34px 0 54px 36px;
 }
 
+.popup__title_centered {
+    margin: 32px auto 0;
+    max-width: 358px;
+    text-align: center;
+}
+
 @media screen and (max-width: 767px) {
     .popup__title {
         font-size: 18px;
         margin: 25px 0 75px 22px;
+    }
+    .popup__title_centered {
+        margin: 40px auto 0;
+        max-width: 244px;
     }
 }

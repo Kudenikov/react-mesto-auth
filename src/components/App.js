@@ -1,4 +1,7 @@
 import React from 'react';
+import { Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import Login from './Login';
+import Register from './Register';
 import Footer from './Footer';
 import Header from './Header';
 import ImagePopup from './ImagePopup';
@@ -6,12 +9,14 @@ import Main from './Main';
 import PopupWithForm from './PopupWithForm';
 import EditProfilePopup from './EditProfilePopup';
 import EditAvatarPopup from './EditAvatarPopup';
-import api from '../utils/Api';
 import { CurrentUserContext } from '../contexts/CurrentUserContext';
 import AddPlacePopup from './AddPlacePopup';
+import api from '../utils/Api'
+import ProtectedRoute from './ProtectedRoute';
+import * as auth from '../auth.js';
 
 function App() {
-
+    const [loggedIn, setLoggedIn] = React.useState(false);
     const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = React.useState(false);
     const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = React.useState(false);
     const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = React.useState(false);
@@ -19,6 +24,11 @@ function App() {
     const [selectedCard, setSelectedCard] = React.useState({});
     const [currentUser, setCurrentUser] = React.useState({});
     const [cards, setCards] = React.useState([]);
+    const [isRegistered, setIsRegistered] = React.useState(false);
+    const [isFailed, setIsFailed] = React.useState(false);
+    const navigate = useNavigate();
+    const [email, setEmail] = React.useState('');
+    const [isEmailVisible, setIsEmailVisible] = React.useState(false);
 
     React.useEffect(() => {
         api.getInitialCards()
@@ -26,6 +36,25 @@ function App() {
         .catch(error => 
             console.log('ОШИБКА:', error))
     }, [])
+
+    React.useEffect(()=>{
+        if (loggedIn){
+          navigate('/mesto');
+        }
+      }, [loggedIn, navigate])
+
+    React.useEffect(() => {
+        if (localStorage.getItem('jwt')) {
+          const jwt = localStorage.getItem('jwt');
+          // проверяем токен пользователя
+          auth.checkToken(jwt).then((res) => {
+            if (res) {
+              setLoggedIn(true);
+              setEmail(res.data.email);
+            }
+          });
+        }
+      }, [email]);
 
     function handleCardLike(card) {
         // Снова проверяем, есть ли уже лайк на этой карточке
@@ -71,11 +100,38 @@ function App() {
         setIsImagePopupOpen(true);
     }
 
+    function handleLogin(formData) {
+        auth.authorize(formData.password, formData.email)
+        .then((data) => {
+          localStorage.setItem('jwt', data.token);
+          setLoggedIn(true);
+          navigate("/mesto");
+        })
+        .catch(err => {
+            console.log(err)
+            setIsFailed(true);
+        });
+    }
+
+    function handleRegistration(formData) {
+        auth.register(formData.password, formData.email)
+        .then((res) => {
+            setIsRegistered(true);
+        })
+        .catch(err => console.log(err));
+    }
+
+    function closeSuccessToolTip() {
+        setIsRegistered(false);
+        navigate("/sign-in");
+    }
+
     const closeAllPopups = () => {
             setIsEditProfilePopupOpen(false);
             setIsAddPlacePopupOpen(false);
             setIsEditAvatarPopupOpen(false);
             setIsImagePopupOpen(false);
+            setIsFailed(false);
             setSelectedCard({});
     }
 
@@ -110,27 +166,95 @@ function App() {
         .finally(closeAllPopups())
     }
 
+    function handleExitButton() {
+        setLoggedIn(false);
+        setIsEmailVisible(false);
+        localStorage.removeItem('jwt');
+        navigate("/sign_in");
+    }
+
+    function handleMenu() {
+        setIsEmailVisible(!isEmailVisible);
+    }
+
   return (
-    <CurrentUserContext.Provider value={currentUser}>
-        <div>
-            <Header />
-            <Main 
-                onEditAvatar={handleEditAvatarClick} 
-                onEditProfile={handleEditProfileClick} 
-                onAddPlace={handleAddPlaceClick} 
-                onCard={handleCardClick} 
-                cards={cards} 
-                onCardLike={handleCardLike} 
-                onCardDelete={handleCardDelete} 
+    <Routes>
+        <Route path="*" element={
+            loggedIn ? <Navigate to="/mesto" /> : <Navigate to="/sign-in" />
+        } />
+        <Route path="/mesto" element={
+            <ProtectedRoute loggedIn={loggedIn}>
+                <CurrentUserContext.Provider value={currentUser}>
+                    <div>
+                        <Header 
+                            text="Выйти" 
+                            onClick={handleExitButton} 
+                            email={email}
+                            color="grey"
+                            isOpen={isEmailVisible}
+                        >
+                            <button 
+                                type="button" 
+                                className={`header__menu ${isEmailVisible ? "header__menu_close" : ""}`} 
+                                onClick={handleMenu} />
+                        </Header>
+                        <Main 
+                            onEditAvatar={handleEditAvatarClick} 
+                            onEditProfile={handleEditProfileClick} 
+                            onAddPlace={handleAddPlaceClick} 
+                            onCard={handleCardClick} 
+                            cards={cards} 
+                            onCardLike={handleCardLike} 
+                            onCardDelete={handleCardDelete} 
+                        />
+                        <Footer />
+                        <EditProfilePopup 
+                            isOpen={isEditProfilePopupOpen} 
+                            onClose={closeAllPopups} 
+                            onUpdateUser={handleUpdateUser}
+                        />
+                        <AddPlacePopup 
+                            isOpen={isAddPlacePopupOpen} 
+                            onClose={closeAllPopups} 
+                            onAddPlace={handleAddPlace} 
+                        />
+                        <PopupWithForm 
+                            name="delete-card" 
+                            title="Вы уверены?" 
+                            onClose={closeAllPopups} 
+                            buttonText="Да" 
+                        />
+                        <EditAvatarPopup 
+                            isOpen={isEditAvatarPopupOpen} 
+                            onClose={closeAllPopups} 
+                            onUpdateAvatar={handleUpdateAvatar} 
+                        />
+                        <ImagePopup 
+                            onClose={closeAllPopups} 
+                            link={selectedCard.link} 
+                            name={selectedCard.name} 
+                            isOpen={isImagePopupOpen} />
+                    </div>
+                </CurrentUserContext.Provider>
+            </ProtectedRoute>
+        }/>
+
+        <Route path="/sign-up" element={
+            <Register 
+                onClose={closeSuccessToolTip}
+                isOpen={isRegistered}
+                handleRegistration={handleRegistration}
             />
-            <Footer />
-            <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser}/>
-            <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlace} />
-            <PopupWithForm name="delete-card" title="Вы уверены?" onClose={closeAllPopups} buttonText="Да" />
-            <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar} />
-            <ImagePopup onClose={closeAllPopups} link={selectedCard.link} name={selectedCard.name} isOpen={isImagePopupOpen} />
-        </div>
-    </CurrentUserContext.Provider>
+        }/>
+        <Route path="/sign-in" element={
+            <Login 
+                onClose={closeAllPopups}
+                isOpen={isFailed}
+                handleLogin={handleLogin}
+            />
+        }/>
+    </Routes>
+
   );
 }
 

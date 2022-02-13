@@ -1,0 +1,30 @@
+.header__link {
+    font-size: 18px;
+    font-family: 'Inter', Arial, sans-serif;
+    text-decoration: none;
+    opacity: 1;
+    transition: opacity .2s ease-in;
+    background-color: #000;
+    border: none;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+}
+
+.header__link:hover {
+    opacity: .8;
+}
+
+.header__link_color_white {
+    color: #fff;
+}
+
+.header__link_color_grey {
+    color: #a9a9a9;
+}
+
+@media screen and (max-width: 767px) {
+    .header__link {
+        font-size: 14px;
+    }
+}

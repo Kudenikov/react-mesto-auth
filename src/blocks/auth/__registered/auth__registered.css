@@ -1,0 +1,13 @@
+.auth__registered {
+    display: flex;
+    margin: 15px auto 0;
+    width: 358px;
+    justify-content: center;
+    align-items: flex-start;
+    font-family: 'Inter', Arial, sans-serif;
+    font-size: 14px;
+}
+
+.auth__registered_invisible {
+    display: none;
+}

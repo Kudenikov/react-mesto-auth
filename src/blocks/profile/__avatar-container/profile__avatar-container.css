@@ -22,3 +22,9 @@
 .profile__avatar-container:hover::after {
     opacity: .8;
 }
+
+@media screen and (max-width: 767px) {
+    .profile__avatar-container::after {
+        margin: 0 auto;
+    }
+}
