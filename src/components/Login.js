@@ -2,7 +2,6 @@ import AuthForm from "./AuthForm";
 import Header from "./Header";
 import InfoToolTip from './InfoToolTip';
 import React from "react";
-import somethingWrong from '../images/something-wrong.svg';
 import { useNavigate } from "react-router-dom";
 
 function Login(props) {
@@ -57,7 +56,7 @@ function Login(props) {
                 onClose={props.onClose} 
                 isOpen={props.isOpen} 
                 title="Что-то пошло не так! Попробуйте еще раз." 
-                image={somethingWrong}
+                image={props.imageToolTip}
             />
         </>
     )

@@ -3,23 +3,32 @@ import React from "react";
 
 function AddPlacePopup(props) {
 
-    const nameRef = React.useRef();
-    const linkRef = React.useRef();
+    const [newPlace, setNewPlace] = React.useState({
+        placeName: '',
+        placeLink: ''
+    });
 
     function handleSubmit(e) {
         e.preventDefault();
-      
+        if (!newPlace.placeName || !newPlace.placeLink) {
+            return;
+        }
         props.onAddPlace({
-            name: nameRef.current.value,
-            link: linkRef.current.value
-          });
-        nameRef.current.value = '';
-        linkRef.current.value = '';
-      }
+            name: newPlace.placeName,
+            link: newPlace.placeLink
+        })
+    }
+
+    function handleChange(e) {
+        const { name, value } = e.target;
+        setNewPlace({
+            ...newPlace,
+          [name]: value
+        });
+    }
 
     React.useEffect(() => {
-        nameRef.current.value = '';
-        linkRef.current.value = '';
+        setNewPlace({ placeName: '', placeLink: '' });
     }, [props.isOpen]);
 
     return (
@@ -35,21 +44,23 @@ function AddPlacePopup(props) {
                 id="place-input" 
                 type="text" 
                 className="popup__input" 
-                name="place-name" 
+                name="placeName" 
                 placeholder="Название" 
                 required 
                 minLength="2" 
                 maxLength="30" 
-                ref={nameRef} 
+                value={newPlace.placeName}
+                onChange={handleChange}
             />
             <span className="place-input-error popup__input-error"></span>
             <input 
                 id="link-input" 
                 className="popup__input" 
-                name="image-link" 
+                name="placeLink" 
                 placeholder="Ссылка на картинку" 
                 required type="url" 
-                ref={linkRef} 
+                value={newPlace.placeLink}
+                onChange={handleChange}
             />
             <span className="link-input-error popup__input-error"></span>
         </PopupWithForm>

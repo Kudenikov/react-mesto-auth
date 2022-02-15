@@ -8,7 +8,9 @@ const getJson = (response) => {
   if (response.ok){
     return response.json();
   }
-  throw new Error({status: response.status});
+  else {
+    return Promise.reject(`Ошибка: ${response.status + ' ' + response.statusText}`);
+}
 }
 
 export const register = (password, email) => {

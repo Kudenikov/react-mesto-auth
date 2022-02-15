@@ -13,7 +13,9 @@ import { CurrentUserContext } from '../contexts/CurrentUserContext';
 import AddPlacePopup from './AddPlacePopup';
 import api from '../utils/Api'
 import ProtectedRoute from './ProtectedRoute';
-import * as auth from '../auth.js';
+import * as auth from '../utils/auth.js';
+import wellDone from '../images/well-done.svg';
+import somethingWrong from '../images/something-wrong.svg';
 
 function App() {
     const [loggedIn, setLoggedIn] = React.useState(false);
@@ -29,6 +31,8 @@ function App() {
     const navigate = useNavigate();
     const [email, setEmail] = React.useState('');
     const [isEmailVisible, setIsEmailVisible] = React.useState(false);
+    const [message, setMessage] = React.useState('');
+    const [imageToolTip, setImageToolTip] = React.useState('');
 
     React.useEffect(() => {
         api.getInitialCards()
@@ -52,7 +56,9 @@ function App() {
               setLoggedIn(true);
               setEmail(res.data.email);
             }
-          });
+          })
+          .catch(error => 
+            console.log('ОШИБКА:', error))
         }
       }, [email]);
 
@@ -63,15 +69,18 @@ function App() {
         // Отправляем запрос в API и получаем обновлённые данные карточки
         api.changeLikeCardStatus(card._id, isLiked).then((newCard) => {
             setCards((state) => state.map((c) => c._id === card._id ? newCard : c));
-        });
+        })
+        .catch(error => 
+            console.log('ОШИБКА:', error))
     }
 
     function handleCardDelete(card) {
-        api.deleteCard(card._id).then(
-            setCards((state) => state.filter((item) => 
-                item._id !== card._id
-            )
-            ))
+        api.deleteCard(card._id)
+        .then(setCards((state) => state.filter((item) => 
+            item._id !== card._id
+            )))
+        .catch(error => 
+            console.log('ОШИБКА:', error))
     }
 
     React.useEffect(() => {
@@ -108,7 +117,8 @@ function App() {
           navigate("/mesto");
         })
         .catch(err => {
-            console.log(err)
+            console.log(err);
+            setImageToolTip(somethingWrong);
             setIsFailed(true);
         });
     }
@@ -116,9 +126,15 @@ function App() {
     function handleRegistration(formData) {
         auth.register(formData.password, formData.email)
         .then((res) => {
+            setMessage("Вы успешно зарегистрировались!");
+            setImageToolTip(wellDone);
             setIsRegistered(true);
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            setMessage(err);
+            setImageToolTip(somethingWrong);
+            setIsRegistered(true);
+        });
     }
 
     function closeSuccessToolTip() {
@@ -135,14 +151,26 @@ function App() {
             setSelectedCard({});
     }
 
+    React.useEffect(() => {
+        const closeByEscape = (e) => {
+          if (e.key === 'Escape') {
+            closeAllPopups();
+          }
+        }
+  
+        document.addEventListener('keydown', closeByEscape)
+        
+        return () => document.removeEventListener('keydown', closeByEscape)
+    }, [])
+
     function handleUpdateUser(user) {
         api.updateUserInfo(user)
         .then(result => {
             setCurrentUser(result);
+            closeAllPopups();
         })
         .catch(error => 
             console.log('ОШИБКА:', error))
-        .finally(closeAllPopups())
     }
 
     function handleUpdateAvatar(avatar) {
@@ -153,17 +181,16 @@ function App() {
         })
         .catch(error => 
             console.log('ОШИБКА:', error))
-        .finally(closeAllPopups())
     }
 
     function handleAddPlace(place) {
         api.addNewCard(place)
         .then(newCard => {
-            setCards([newCard, ...cards]); 
+            setCards([newCard, ...cards]);
+            closeAllPopups();
         })
         .catch(error => 
             console.log('ОШИБКА:', error))
-        .finally(closeAllPopups())
     }
 
     function handleExitButton() {
@@ -233,7 +260,8 @@ function App() {
                             onClose={closeAllPopups} 
                             link={selectedCard.link} 
                             name={selectedCard.name} 
-                            isOpen={isImagePopupOpen} />
+                            isOpen={isImagePopupOpen} 
+                        />
                     </div>
                 </CurrentUserContext.Provider>
             </ProtectedRoute>
@@ -244,6 +272,8 @@ function App() {
                 onClose={closeSuccessToolTip}
                 isOpen={isRegistered}
                 handleRegistration={handleRegistration}
+                message={message}
+                imageToolTip={imageToolTip}
             />
         }/>
         <Route path="/sign-in" element={
@@ -251,6 +281,7 @@ function App() {
                 onClose={closeAllPopups}
                 isOpen={isFailed}
                 handleLogin={handleLogin}
+                imageToolTip={imageToolTip}
             />
         }/>
     </Routes>

@@ -1,7 +1,6 @@
 import Header from "./Header";
 import AuthForm from "./AuthForm";
 import InfoToolTip from './InfoToolTip';
-import wellDone from '../images/well-done.svg';
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -56,8 +55,8 @@ function Register(props) {
             <InfoToolTip 
                 onClose={props.onClose} 
                 isOpen={props.isOpen} 
-                title="Вы успешно зарегистрировались!" 
-                image={wellDone}
+                title={props.message} 
+                image={props.imageToolTip}
             />
         </>
     )
