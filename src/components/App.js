@@ -76,9 +76,11 @@ function App() {
 
     function handleCardDelete(card) {
         api.deleteCard(card._id)
-        .then(setCards((state) => state.filter((item) => 
+        .then(() => {
+            setCards((state) => state.filter((item) => 
             item._id !== card._id
-            )))
+            ))
+        })
         .catch(error => 
             console.log('ОШИБКА:', error))
     }
@@ -128,13 +130,12 @@ function App() {
         .then((res) => {
             setMessage("Вы успешно зарегистрировались!");
             setImageToolTip(wellDone);
-            setIsRegistered(true);
         })
         .catch(err => {
             setMessage(err);
             setImageToolTip(somethingWrong);
-            setIsRegistered(true);
-        });
+        })
+        .finally(() => setIsRegistered(true));
     }
 
     function closeSuccessToolTip() {
